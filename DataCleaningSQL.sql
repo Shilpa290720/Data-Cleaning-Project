@@ -68,9 +68,8 @@ FROM (
 WHERE 
 	row_num > 1;
 
--- these are the ones we want to delete where the row number is > 1 or 2or greater essentially
+-- these are the ones we want to delete where the row number is > 1 or 2or greater essentially using CTE
 
--- now you may want to write it like this:
 WITH DELETE_CTE AS 
 (
 SELECT *
@@ -101,15 +100,13 @@ WHERE (company, location, industry, total_laid_off, percentage_laid_off, `date`,
 	FROM DELETE_CTE
 ) AND row_num > 1;
 
--- one solution, which I think is a good one. Is to create a new column and add those row numbers in. Then delete where row numbers are over 2, then delete that column
--- so let's do it!!
+-- one solution is to create a new column and add those row numbers in. Then delete where row numbers are over 2, then delete that column
 
 ALTER TABLE world_layoffs.layoffs_staging ADD row_num INT;
 
-
 SELECT *
-FROM world_layoffs.layoffs_staging
-;
+FROM world_layoffs.layoffs_staging;
+
 
 CREATE TABLE `world_layoffs`.`layoffs_staging2` (
 `company` text,
@@ -156,17 +153,14 @@ DELETE FROM world_layoffs.layoffs_staging2
 WHERE row_num >= 2;
 
 
-
-
-
-
-
 -- 2. Standardize Data
 
 SELECT * 
 FROM world_layoffs.layoffs_staging2;
 
+
 -- if we look at industry it looks like we have some null and empty rows, let's take a look at these
+
 SELECT DISTINCT industry
 FROM world_layoffs.layoffs_staging2
 ORDER BY industry;
@@ -187,8 +181,8 @@ FROM world_layoffs.layoffs_staging2
 WHERE company LIKE 'airbnb%';
 
 -- it looks like airbnb is a travel, but this one just isn't populated.
--- I'm sure it's the same for the others. What we can do is
--- write a query that if there is another row with the same company name, it will update it to the non-null industry values
+-- it might be the same for the others.
+-- we can write a query that if there is another row with the same company name, it will update it to the non-null industry values
 -- makes it easy so if there were thousands we wouldn't have to manually check them all
 
 -- we should set the blanks to nulls since those are typically easier to work with
